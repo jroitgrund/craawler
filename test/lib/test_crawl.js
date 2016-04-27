@@ -11,32 +11,60 @@ chai.should();
 
 describe('crawl', function () {
   let crawl;
-  let fetchLinks;
+  let fetchLinksAndAssets;
 
   beforeEach(function () {
-    fetchLinks = sinon.stub();
-    crawl = crawlFactory(fetchLinks);
+    fetchLinksAndAssets = sinon.stub();
+    crawl = crawlFactory(fetchLinksAndAssets);
   });
 
   it('returns a map from url to link', function () {
-    fetchLinks.withArgs('url').returns(Promise.resolve(['url2', 'url3']));
-    fetchLinks.withArgs('url2').returns(Promise.resolve(['url4']));
-    fetchLinks.withArgs('url3').returns(Promise.resolve([]));
-    fetchLinks.withArgs('url4').returns(Promise.resolve([]));
-    crawl('url').should.eventually.eql({
-      url: ['url2', 'url3'],
-      url2: ['url4'],
+    fetchLinksAndAssets.withArgs('url').returns(
+      Promise.resolve({ links: ['url2', 'url3'], assets: [] }));
+    fetchLinksAndAssets.withArgs('url2').returns(
+      Promise.resolve({ links: ['url4'], assets: ['foo', 'baz'] }));
+    fetchLinksAndAssets.withArgs('url3').returns(Promise.resolve({ links: [], assets: [] }));
+    fetchLinksAndAssets.withArgs('url4').returns(Promise.resolve({ links: [], assets: [] }));
+    return crawl('url').then(siteMap => {
+      siteMap.should.eql({
+        url: { links: ['url2', 'url3'], assets: [] },
+        url2: { links: ['url4'], assets: ['foo', 'baz'] },
+      });
+      fetchLinksAndAssets.callCount.should.eql(4);
     });
   });
 
   it('is error resilient, ignoring URLs it can\'t crawl', function () {
-    fetchLinks.withArgs('url').returns(Promise.resolve(['url2', 'url3']));
-    fetchLinks.withArgs('url2').returns(Promise.resolve(['url4']));
-    fetchLinks.withArgs('url3').returns(Promise.reject());
-    fetchLinks.withArgs('url4').returns(Promise.resolve([]));
+    fetchLinksAndAssets.withArgs('url').returns(
+      Promise.resolve({ links: ['url2', 'url3'], assets: [] }));
+    fetchLinksAndAssets.withArgs('url2').returns(Promise.resolve({ links: ['url4'], assets: [] }));
+    fetchLinksAndAssets.withArgs('url3').returns(Promise.reject());
+    fetchLinksAndAssets.withArgs('url4').returns(Promise.resolve({ links: [], assets: [] }));
     crawl('url').should.eventually.eql({
-      url: ['url2', 'url3'],
-      url2: ['url4'],
+      url: { links: ['url2', 'url3'], assets: [] },
+      url2: { links: ['url4'], assets: [] },
+    });
+  });
+
+  it('doesn\'t crawl the same URL twice', function () {
+    fetchLinksAndAssets.withArgs('url').returns(
+      Promise.resolve({ links: ['url'], assets: [] }));
+    return crawl('url').then(siteMap => {
+      siteMap.should.eql({
+        url: { links: ['url'], assets: [] },
+      });
+      fetchLinksAndAssets.callCount.should.eql(1);
+    });
+  });
+
+  it('doesn\'t crawl different domains', function () {
+    fetchLinksAndAssets.withArgs('http://gocardless.com').returns(
+      Promise.resolve({ links: ['http://uselotsofcards.evilbiz/'], assets: [] }));
+    return crawl('http://gocardless.com').then(siteMap => {
+      siteMap.should.eql({
+        ['http://gocardless.com']: { links: ['http://uselotsofcards.evilbiz/'], assets: [] },
+      });
+      fetchLinksAndAssets.callCount.should.eql(1);
     });
   });
 });

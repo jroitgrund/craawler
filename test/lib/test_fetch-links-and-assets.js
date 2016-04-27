@@ -2,7 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 
-import fetchLinksFactory from '../../src/lib/fetch-links';
+import fetchLinksAndAssetsFactory from '../../src/lib/fetch-links-and-assets';
 
 /* eslint-disable prefer-arrow-callback, func-names */
 
@@ -10,7 +10,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 describe('fetch-links', function () {
-  let fetchLinks;
+  let fetchLinksAndAssets;
   let requestPromise;
   const url = 'http://gocardless.com/1/2/3.aspx?foo=true';
   const emptyResult = { links: [], assets: [] };
@@ -18,7 +18,7 @@ describe('fetch-links', function () {
   beforeEach(function () {
     const requestPromiseApi = { get: () => undefined, head: () => undefined };
     requestPromise = sinon.mock(requestPromiseApi);
-    fetchLinks = fetchLinksFactory(requestPromiseApi);
+    fetchLinksAndAssets = fetchLinksAndAssetsFactory(requestPromiseApi);
   });
 
   it('returns an empty list for non-HTML URLs', function () {
@@ -27,7 +27,7 @@ describe('fetch-links', function () {
       .withArgs(url)
       .returns(Promise.resolve({ 'content-type': 'image/jpg' }));
 
-    return fetchLinks(url).should.eventually.eql(emptyResult);
+    return fetchLinksAndAssets(url).should.eventually.eql(emptyResult);
   });
 
   it('returns an empty list for unparseable HTML', function () {
@@ -41,7 +41,7 @@ describe('fetch-links', function () {
       .withArgs(url)
       .returns(Promise.resolve('not<htmlatAll!'));
 
-    return fetchLinks(url).should.eventually.eql(emptyResult);
+    return fetchLinksAndAssets(url).should.eventually.eql(emptyResult);
   });
 
   it('bubbles up errors', function () {
@@ -50,7 +50,7 @@ describe('fetch-links', function () {
       .withArgs(url)
       .returns(Promise.reject('error'));
 
-    return fetchLinks(url).should.be.rejected;
+    return fetchLinksAndAssets(url).should.be.rejected;
   });
 
   it('returns the links and static assets', function () {
@@ -70,6 +70,7 @@ describe('fetch-links', function () {
   <body>
     <a href="../foo"></a>
     <a href="/bar"></a>
+    <a href="http://differentdomain.com/"></a>
     <div><a href="bar"></a></div>
     <a href="4/foo"></a>
     <img src="img">
@@ -78,8 +79,9 @@ describe('fetch-links', function () {
   </body>
 </html>`));
 
-    return fetchLinks(url).should.eventually.eql({
+    return fetchLinksAndAssets(url).should.eventually.eql({
       links: [
+        'http://differentdomain.com/',
         'http://gocardless.com/1/2/4/foo',
         'http://gocardless.com/1/2/bar',
         'http://gocardless.com/1/foo',
