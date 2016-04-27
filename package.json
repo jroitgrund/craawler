@@ -1,0 +1,39 @@
+{
+  "name": "crawler",
+  "version": "1.0.0",
+  "description": "Web crawler",
+  "scripts": {
+    "build": "babel src -d dist",
+    "coverage": "istanbul cover _mocha -- test/**/test_* --compilers js:babel-register",
+    "run-dev": "babel-node --presets es2015,stage-2 src/index.js",
+    "test": "mocha test/**/test_* --compilers js:babel-register"
+    "run": "node dist/index.js",
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jroitgrund/crawler.git"
+  },
+  "keywords": [
+    "crawler"
+  ],
+  "author": "Jonathan Roitgrund <jonathan@roitgrund.me> (http://github.com/jroitgrund)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jroitgrund/crawler/issues"
+  },
+  "homepage": "https://github.com/jroitgrund/crawler",
+  "devDependencies": {
+    "babel-core": "^6.0.20",
+    "babel-eslint": "^4.1.3",
+    "babel-loader": "^6.0.1",
+    "babel-plugin-transform-strict-mode": "^6.6.5",
+    "babel-preset-es2015": "^6.0.15",
+    "babel-preset-react": "^6.0.15",
+    "babel-preset-stage-0": "^6.0.15",
+    "babel-register": "^6.7.2",
+    "eslint": "^1.10.3",
+    "istanbul": "^1.0.0-alpha.2"
+  },
+  "dependencies": {
+  }
+}
