@@ -1,8 +1,6 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import cheerio from 'cheerio';
 import sinon from 'sinon';
-import urlLib from 'url';
 
 import fetchLinksFactory from '../../src/lib/fetch-links';
 
@@ -15,11 +13,12 @@ describe('fetch-links', function () {
   let fetchLinks;
   let requestPromise;
   const url = 'http://gocardless.com/1/2/3.aspx?foo=true';
+  const emptyResult = { links: [], assets: [] };
 
   beforeEach(function () {
     const requestPromiseApi = { get: () => undefined, head: () => undefined };
     requestPromise = sinon.mock(requestPromiseApi);
-    fetchLinks = fetchLinksFactory(cheerio, requestPromiseApi, urlLib);
+    fetchLinks = fetchLinksFactory(requestPromiseApi);
   });
 
   it('returns an empty list for non-HTML URLs', function () {
@@ -28,7 +27,7 @@ describe('fetch-links', function () {
       .withArgs(url)
       .returns(Promise.resolve({ 'content-type': 'image/jpg' }));
 
-    return fetchLinks(url).should.eventually.eql([]);
+    return fetchLinks(url).should.eventually.eql(emptyResult);
   });
 
   it('returns an empty list for unparseable HTML', function () {
@@ -42,7 +41,7 @@ describe('fetch-links', function () {
       .withArgs(url)
       .returns(Promise.resolve('not<htmlatAll!'));
 
-    return fetchLinks(url).then(urls => urls.sort()).should.eventually.eql([]);
+    return fetchLinks(url).should.eventually.eql(emptyResult);
   });
 
   it('bubbles up errors', function () {
@@ -54,7 +53,7 @@ describe('fetch-links', function () {
     return fetchLinks(url).should.be.rejected;
   });
 
-  it('returns a list of found links for HTML URLs', function () {
+  it('returns the links and static assets', function () {
     requestPromise.expects('head')
       .once()
       .withArgs(url)
@@ -73,14 +72,24 @@ describe('fetch-links', function () {
     <a href="/bar"></a>
     <div><a href="bar"></a></div>
     <a href="4/foo"></a>
+    <img src="img">
+    <link rel="link">
+    <script src="script">
   </body>
 </html>`));
 
-    return fetchLinks(url).then(urls => urls.sort()).should.eventually.eql([
-      'http://gocardless.com/1/2/4/foo',
-      'http://gocardless.com/1/2/bar',
-      'http://gocardless.com/1/foo',
-      'http://gocardless.com/bar',
-    ]);
+    return fetchLinks(url).should.eventually.eql({
+      links: [
+        'http://gocardless.com/1/2/4/foo',
+        'http://gocardless.com/1/2/bar',
+        'http://gocardless.com/1/foo',
+        'http://gocardless.com/bar',
+      ],
+      assets: [
+        'http://gocardless.com/1/2/img',
+        'http://gocardless.com/1/2/link',
+        'http://gocardless.com/1/2/script',
+      ],
+    });
   });
 });
