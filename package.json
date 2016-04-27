@@ -6,8 +6,8 @@
     "build": "babel src -d dist",
     "coverage": "istanbul cover _mocha -- test/**/test_* --compilers js:babel-register",
     "run-dev": "babel-node --presets es2015,stage-2 src/index.js",
-    "test": "mocha test/**/test_* --compilers js:babel-register"
-    "run": "node dist/index.js",
+    "test": "mocha test/**/test_* --compilers js:babel-register",
+    "run": "node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -31,9 +31,14 @@
     "babel-preset-react": "^6.0.15",
     "babel-preset-stage-0": "^6.0.15",
     "babel-register": "^6.7.2",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
     "eslint": "^1.10.3",
-    "istanbul": "^1.0.0-alpha.2"
+    "istanbul": "^1.0.0-alpha.2",
+    "sinon": "^1.17.3"
   },
   "dependencies": {
+    "cheerio": "^0.20.0",
+    "request-promise": "^3.0.0"
   }
 }
