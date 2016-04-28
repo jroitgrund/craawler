@@ -44,7 +44,7 @@ words, each page should be displayed at the shallowest level it can be found, ra
 whatever order it was first found when making all the HTTP requests.
 
 * The `formatter` builds a nested structure from the crawler output starting from the root URL and
-  uses jade to generate a static HTML report.
+  uses jade to generate a static HTML report. It's only tested with a golden test.
 
 ## Lower-level tidbits
 
