@@ -32,13 +32,22 @@ describe('nest', function () {
           assets: [],
         },
       }).should.eql({
-        url1: {
-          url2: {
-            url3: {},
+        nestedUrls: {
+          url1: {
+            url2: {
+              url3: {},
+            },
+            url5: {
+              url4: {},
+            },
           },
-          url5: {
-            url4: {},
-          },
+        },
+        urlIds: {
+          url1: 0,
+          url2: 1,
+          url5: 2,
+          url3: 3,
+          url4: 4,
         },
       });
   });

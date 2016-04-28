@@ -1,19 +1,20 @@
 export default (rootUrl, urlMap) => {
-  const seenUrls = { [rootUrl]: true };
-  const structure = { [rootUrl]: {} };
-  const toProcess = [{ url: rootUrl, into: structure[rootUrl] }];
+  let nextUrlId = 0;
+  const urlIds = { [rootUrl]: nextUrlId };
+  const nestedUrls = { [rootUrl]: {} };
+  const toProcess = [{ url: rootUrl, into: nestedUrls[rootUrl] }];
   while (toProcess.length > 0) {
     const { url, into } = toProcess.shift();
     if (urlMap[url]) {
-      urlMap[url].links.forEach(link => {
-        if (!seenUrls[link]) {
+      for (const link of urlMap[url].links) {
+        if (urlIds[link] === undefined) {
           into[link] = {};
           toProcess.push({ url: link, into: into[link] });
-          seenUrls[link] = true;
+          urlIds[link] = ++nextUrlId;
         }
-      });
+      }
     }
   }
 
-  return structure;
+  return { nestedUrls, urlIds };
 };
