@@ -6,7 +6,9 @@
 
 * `node dist/index.js http://gocardless.com`
 
-* Generate a coverage report with `npm run coverage`
+* View `sitemap.html` in your browser.
+
+* (Optional) Generate a coverage report with `npm run coverage`
 
 ## My thoughts
 
@@ -45,9 +47,8 @@ I broke the crawler up into four parts.
   other words, each page should be displayed at the shallowest level it can be found, rather than in
   whatever order it was first found when making all the HTTP requests.
 
-* The `formatter` builds a nested structure from the crawler output starting from the root URL and
-  uses jade to generate a static HTML report. It's untested because I only included tests I wrote
-  before code but usually I would use a golden test for this.
+* The `formatter` uses jade to generate a static HTML report. It's untested because I only included
+  tests I wrote before code but usually I would use a golden test for this.
 
 ## Lower-level tidbits
 
@@ -58,7 +59,7 @@ I broke the crawler up into four parts.
   conform to good practice (at least whatever good practice is agreed on at airbnb and detectable
   with static analysis).
 
-* Everything is tested with high coverage as verified by `istanbul`.
+* Everything is tested with high coverage as verified by `istanbul` (96%).
 
 ## Use of node.js
 

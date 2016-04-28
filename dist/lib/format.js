@@ -23,6 +23,7 @@ exports.default = function (rootUrl, urlMap) {
   var urlIds = _nest.urlIds;
 
   var html = fn({
+    rootUrl: rootUrl,
     urlMap: urlMap,
     nestedUrls: nestedUrls,
     urlIds: urlIds
