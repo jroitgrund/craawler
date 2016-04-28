@@ -1,229 +1,68 @@
-# Example Node Server w/ Babel
+# GoCardless crawler
 
-### Getting Started
+## How to run
 
-First we'll install `babel-cli`.
+* Clone the repoo.
 
-```shell
-$ npm install --save-dev babel-cli
-```
+* `node dist/index.js http://gocardless.com`
 
-Along with some [presets](http://babeljs.io/docs/plugins/#presets).
+* Generate a coverage report with `npm run coverage`.
 
-```shell
-$ npm install --save-dev babel-preset-es2015 babel-preset-stage-2
-```
+## My thoughts
 
-Then create our server in `index.js`.
+* That was pretty fun! I usually use JS for front-end stuff and it was really sweet to see how
+little code it took to write this in modern JS.
 
-```shell
-$ touch index.js
-```
-```js
-import http from 'http';
+* The most challenging part was thorough testing, it's hard to think of all the edge cases and
+code coverage doesn't really help there. Ordinarily I would add more unit tests as the end-to-end
+testing revealed cases I'd forgotten but I intentionally left only the ones I caught in the
+first place while TDD'ing.
 
-http.createServer((req, res) => {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Hello World\n');
-}).listen(1337, '127.0.0.1');
+# Templating was also hard because I'd never used `Jade`.
 
-console.log('Server running at http://127.0.0.1:1337/');
-```
+* It's missing assets from CSS (`background-image`).
 
-Then we'll add our first `npm start` script in `package.json`.
+* It's pretty robust apart from that (dedupes same URL with different hash fragment or
+http:// rather than https://).
 
-```diff
-  "scripts": {
-+   "start": "babel-node index.js --presets es2015,stage-2"
-  }
-```
+## High-level design
 
-Now let's start our server.
+I broke the crawler up into four parts.
 
-```shell
-$ npm start
-```
+* The `fetcher` takes a URL and returns all the links and assets it finds there. I didn't think it
+was necessary to break up fetching and parsing the HTML as most of this work is offloaded to
+external libraries anyway.
 
-You should now be able to visit `http://127.0.0.1:1337` and see `Hello World`.
+* The `crawler` takes a URL and recursively fetches all the links it finds there, while making sure
+to stay in the same domain and not crawl anything twice. It returns a flat structure where
+each URL maps to a list of links and static assets found there. Internally it has a separate
+map of seen URLs because when deduping we don't care whether a URL is https or not.
 
-### Watching file changes with `nodemon`
+# The `nester` takes the flat structure returned by the crawler and turns it into a URL hierarchy.
+The reason for splitting these two steps up is to ensure that the sitemap is breadth-first. In
+other words, each page should be displayed at the shallowest level it can be found, rather than
+in whatever order it was first found when making all the HTTP requests.
 
-We can improve our `npm start` script with `nodemon`.
+* The `formatter` builds a nested structure from the crawler output starting from the root URL
+and uses jade to generate a static HTML report.
 
-```shell
-$ npm install --save-dev nodemon
-```
+## Lower-level tidbits
 
-Then we can update our `npm start` script.
+* I used dependency injection because I'm not used to the hot replacement you can do in dynamic
+languages with things like `proxyquire`, and wasn't sure how well it would play with `babel`.
 
-```diff
-  "scripts": {
--   "start": "babel-node index.js"
-+   "start": "nodemon index.js --exec babel-node --presets es2015,stage-2"
-  }
-```
+* Everything goes through `eslint` and `jscs`, so the style should be identical everywhere and
+conform to good practice (at least whatever good practice is agreed on at airbnb and detectable
+with static analysis).
 
-Then we'll restart our server.
+* Everything is tested with high coverage as verified by `istanbul`.
 
-```shell
-$ npm start
-```
+## Use of node.js
 
-You should now be able to make changes to `index.js` and our server should be
-restarted automatically by `nodemon`.
+Asynchrony, promises, and having a single event loop thread make this task much easier. This would
+be extremely tedious in a threaded language because I would have to lock the URL map to make sure
+I don't have a data race between setting a URL as crawled and checking whether I've already
+crawled it.
 
-Go ahead and replace `Hello World` with `Hello {{YOUR_NAME_HERE}}` while our
-server is running.
-
-If you visit `http://127.0.0.1:1337` you should see our server greeting you.
-
-### Getting ready for production use
-
-So we've cheated a little bit by using `babel-node`. While this is great for
-getting something going. It's not a good idea to use it in production.
-
-We should be precompiling your files, so let's do that now.
-
-First let's move our server `index.js` file to `lib/index.js`.
-
-```shell
-$ mv index.js lib/index.js
-```
-
-And update our `npm start` script to reflect the location change.
-
-```diff
-  "scripts": {
--   "start": "nodemon index.js --exec babel-node --presets es2015,stage-2"
-+   "start": "nodemon lib/index.js --exec babel-node --presets es2015,stage-2"
-  }
-```
-
-Next let's add two new tasks `npm run build` and `npm run serve`.
-
-```diff
-  "scripts": {
-    "start": "nodemon lib/index.js --exec babel-node --presets es2015,stage-2",
-+   "build": "babel lib -d dist --presets es2015,stage-2",
-+   "serve": "node dist/index.js"
-  }
-```
-
-Now we can use `npm run build` for precompiling our assets, and `npm run serve`
-for starting our server in production.
-
-```shell
-$ npm run build
-$ npm run serve
-```
-
-This means we can quickly restart our server without waiting for `babel` to
-recompile our files.
-
-Oh let's not forget to add `dist` to our `.gitignore` file.
-
-```shell
-$ touch .gitignore
-```
-
-```
-dist
-```
-
-This will make sure we don't accidentally commit our built files to git.
-
-### Saving Babel options to `.babelrc`
-
-Let's create a `.babelrc` file.
-
-```shell
-$ touch .babelrc
-```
-
-This will host any options we might want to configure `babel` with.
-
-```json
-{
-  "presets": ["es2015", "stage-2"],
-  "plugins": []
-}
-```
-
-Now we can remove the duplicated options from our npm scripts
-
-```diff
-  "scripts": {
-+   "start": "nodemon lib/index.js --exec babel-node",
-+   "build": "babel lib -d dist",
-    "serve": "node dist/index.js"
-  }
-```
-
-### Testing the server
-
-Finally let's make sure our server is well tested.
-
-Let's install `mocha`.
-
-```shell
-$ npm install --save-dev mocha
-```
-
-And create our test in `test/index.js`.
-
-```shell
-$ mkdir test
-$ touch test/index.js
-```
-
-```js
-import http from 'http';
-import assert from 'assert';
-
-import '../lib/index.js';
-
-describe('Example Node Server', () => {
-  it('should return 200', done => {
-    http.get('http://127.0.0.1:1337', res => {
-      assert.equal(200, res.statusCode);
-      done();
-    });
-  });
-});
-```
-
-Next, install `babel-register` for the require hook.
-
-```shell
-$ npm install --save-dev babel-register
-```
-
-Then we can add an `npm test` script.
-
-```diff
-  "scripts": {
-    "start": "nodemon lib/index.js --exec babel-node",
-    "build": "babel lib -d dist",
-    "serve": "node dist/index.js",
-+   "test": "mocha --compilers js:babel-register"
-  }
-```
-
-Now let's run our tests.
-
-```shell
-$ npm test
-```
-
-You should see the following:
-
-```shell
-Server running at http://127.0.0.1:1337/
-
-  Example Node Server
-    ✓ should return 200
-
-  1 passing (43ms)
-```
-
-That's it!
+JS is also extremely succinct thanks to ES2015, and testing async code is a breeze as libraries
+make it easy to assert on the value of a Promise.
