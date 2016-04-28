@@ -1,0 +1,40 @@
+mixin urlList(urlMap, nestedUrls, id)
+  - var index = id
+  each urls, url in nestedUrls
+    if urlMap[url] && (Object.keys(urls).length > 0 || urlMap[url].assets.length > 0)
+      div(style='margin-left:5px;border:thin solid black;border-right: 0')
+        div
+          b
+            a(data-toggle='collapse', href='#' + index) #{url}
+        div.collapse(id='' + index++)
+          if Object.keys(urls).length > 0
+            b links
+            +urlList(urlMap, urls, 100 * index)
+          if urlMap[url].assets.length > 0
+            b assets
+            each asset in urlMap[url].assets
+              div(style='margin-left:5px') #{asset}
+    else
+      div(style='margin-left:5px') #{url}
+
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    title Sitemap for #{rootUrl}.
+    style.
+      body {
+          padding: 10px;
+      }
+      a {
+        cursor: pointer;
+      }
+    link(rel='stylesheet', type='text/css', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+    link(rel='stylesheet', type='text/css', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css')
+  body
+    div.container-fluid
+      +urlList(urlMap, nestedUrls, 1)
+    script(src='https://code.jquery.com/jquery-2.2.3.min.js')
+    script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js')

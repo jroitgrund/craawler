@@ -41,12 +41,13 @@ I broke the crawler up into four parts.
   seen URLs because when deduping we don't care whether a URL is https or not.
 
 * The `nester` takes the flat structure returned by the crawler and turns it into a URL hierarchy.
-The reason for splitting these two steps up is to ensure that the sitemap is breadth-first. In other
-words, each page should be displayed at the shallowest level it can be found, rather than in
-whatever order it was first found when making all the HTTP requests.
+  The reason for splitting these two steps up is to ensure that the sitemap is breadth-first. In
+  other words, each page should be displayed at the shallowest level it can be found, rather than in
+  whatever order it was first found when making all the HTTP requests.
 
 * The `formatter` builds a nested structure from the crawler output starting from the root URL and
-  uses jade to generate a static HTML report. It's only tested with a golden test.
+  uses jade to generate a static HTML report. It's untested because I only included tests I wrote
+  before code but usually I would use a golden test for this.
 
 ## Lower-level tidbits
 
