@@ -10,11 +10,9 @@ const removeProtocol = url => {
 
 export default fetchLinksAndAssetsAndAssets => rootUrl => {
   const urlMap = {};
-  const seenUrls = {};
+  const seenUrls = { [removeProtocol(rootUrl)]: true };
   const recursiveFetch = url => fetchLinksAndAssetsAndAssets(url)
     .then(linksAndAssets => {
-      console.log(url);
-
       if (linksAndAssets.links.length > 0 || linksAndAssets.assets.length > 0) {
         urlMap[url] = linksAndAssets;
       }

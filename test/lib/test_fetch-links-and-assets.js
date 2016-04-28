@@ -44,13 +44,13 @@ describe('fetch-links', function () {
     return fetchLinksAndAssets(url).should.eventually.eql(emptyResult);
   });
 
-  it('bubbles up errors', function () {
+  it('returns an empty list for HTTP errors', function () {
     requestPromise.expects('head')
       .once()
       .withArgs(url)
       .returns(Promise.reject('error'));
 
-    return fetchLinksAndAssets(url).should.be.rejected;
+    return fetchLinksAndAssets(url).should.eventually.eql(emptyResult);
   });
 
   it('returns the links and static assets', function () {

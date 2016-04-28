@@ -5,7 +5,7 @@
   "scripts": {
     "build": "babel src -d dist",
     "coverage": "istanbul cover _mocha -- test/**/test_* --compilers js:babel-register",
-    "run-dev": "babel-node --presets es2015,stage-2 src/index.js",
+    "run-dev": "babel-node --presets es2015,stage-0 src/index.js",
     "test": "mocha test/**/test_* --compilers js:babel-register",
     "run": "node dist/index.js"
   },
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "cheerio": "^0.20.0",
+    "jade": "^1.11.0",
     "request-promise": "^3.0.0"
   }
 }

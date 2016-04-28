@@ -47,11 +47,11 @@ describe('crawl', function () {
   });
 
   it('doesn\'t crawl the same URL twice', function () {
-    fetchLinksAndAssets.withArgs('url').returns(
-      Promise.resolve({ links: ['url'], assets: [] }));
-    return crawl('url').then(siteMap => {
+    fetchLinksAndAssets.withArgs('http://url').returns(
+      Promise.resolve({ links: ['http://url'], assets: [] }));
+    return crawl('http://url').then(siteMap => {
       siteMap.should.eql({
-        url: { links: ['url'], assets: [] },
+        ['http://url']: { links: ['http://url'], assets: [] },
       });
       fetchLinksAndAssets.callCount.should.eql(1);
     });
