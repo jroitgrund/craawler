@@ -1,20 +1,22 @@
 export default (rootUrl, urlMap) => {
-  console.log(urlMap);
   const seenUrls = { [rootUrl]: true };
-  const recursivelyGetNestedStructure = (rootUrl, urlMap) => {
+  const recursivelyGetNestedStructure = (url) => {
     const structure = { };
     const processRecursively = [];
-    urlMap[rootUrl] && urlMap[rootUrl].links.forEach(link => {
-      if (!seenUrls[link]) {
-        processRecursively.push(link);
-        seenUrls[link] = true;
-      }
-    });
+    if (urlMap[url]) {
+      urlMap[url].links.forEach(link => {
+        if (!seenUrls[link]) {
+          processRecursively.push(link);
+          seenUrls[link] = true;
+        }
+      });
+    }
+
     processRecursively.forEach(link => {
-      structure[link] = recursivelyGetNestedStructure(link, urlMap);
+      structure[link] = recursivelyGetNestedStructure(link);
     });
     return structure;
   };
 
-  return { [rootUrl]: recursivelyGetNestedStructure(rootUrl, urlMap) };
+  return { [rootUrl]: recursivelyGetNestedStructure(rootUrl) };
 };

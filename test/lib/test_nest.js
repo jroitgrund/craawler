@@ -7,7 +7,6 @@ import nest from '../../src/lib/nest';
 chai.should();
 
 describe('nest', function () {
-
   it('returns a nested, breadth-first view of the sitemap', function () {
     nest(
     'url1',
@@ -29,7 +28,7 @@ describe('nest', function () {
           assets: [],
         },
       }).should.eql({
-          url1: { url2: { url4: { } }, url3: { } },
-        });
+        url1: { url2: { url4: { } }, url3: { } },
+      });
   });
 });

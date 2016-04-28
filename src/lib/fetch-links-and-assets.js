@@ -3,6 +3,7 @@ import urlLib from 'url';
 
 const emptyResult = { links: [], assets: [] };
 
+// Returns, for example, all HREFs of all <a> tags, relative to a certain base URL.
 const getAbsolutePathForTagAndAttribute = ($, url, elementType, attribute) =>
   $(elementType).map((i, el) => {
     if ($(el).attr(attribute)) {
@@ -10,21 +11,21 @@ const getAbsolutePathForTagAndAttribute = ($, url, elementType, attribute) =>
       const parsedUrl = urlLib.parse(rawUrl);
       parsedUrl.hash = '';
       return parsedUrl.format();
-    } else {
-      return undefined;
     }
-  }).get().filter(url => url); // Filters out undefined, this is for empty HREFs.
+
+    // Else
+    return undefined;
+  }).get().filter(absoluteUrl => absoluteUrl); // Filters out undefined, this is for empty HREFs.
 
 const uniq = array => array.filter((item, i, arr) => arr.indexOf(item) === i);
 
 export default requestPromise => url => requestPromise
   .head(url)
-  .catch(() => (emptyResult))
+  .catch(() => emptyResult)
   .then(headers => {
     if (headers['content-type'] !== undefined &&
          (headers['content-type'].includes('text/html') ||
           headers['content-type'].includes('application/xhtml+xml'))) {
-      console.log(url);
       return requestPromise.get(url)
         .then(cheerio.load)
         .then($ => {
@@ -35,7 +36,7 @@ export default requestPromise => url => requestPromise
           );
           return { links: uniq(links).sort(), assets: uniq(assets).sort() };
         })
-        .catch(() => (emptyResult));
+        .catch(() => emptyResult);
     }
 
     return emptyResult;

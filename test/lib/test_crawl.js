@@ -34,18 +34,6 @@ describe('crawl', function () {
     });
   });
 
-  it('is error resilient, ignoring URLs it can\'t crawl', function () {
-    fetchLinksAndAssets.withArgs('url').returns(
-      Promise.resolve({ links: ['url2', 'url3'], assets: [] }));
-    fetchLinksAndAssets.withArgs('url2').returns(Promise.resolve({ links: ['url4'], assets: [] }));
-    fetchLinksAndAssets.withArgs('url3').returns(Promise.reject());
-    fetchLinksAndAssets.withArgs('url4').returns(Promise.resolve({ links: [], assets: [] }));
-    crawl('url').should.eventually.eql({
-      url: { links: ['url2', 'url3'], assets: [] },
-      url2: { links: ['url4'], assets: [] },
-    });
-  });
-
   it('doesn\'t crawl the same URL twice', function () {
     fetchLinksAndAssets.withArgs('http://url').returns(
       Promise.resolve({ links: ['http://url'], assets: [] }));

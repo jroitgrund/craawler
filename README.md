@@ -25,6 +25,8 @@
 * It's pretty robust apart from that (dedupes same URL with different hash fragment or `http://`
   rather than `https://`).
 
+* It's not very pretty. I can CSS alright but I can't UX very well.
+
 ## High-level design
 
 I broke the crawler up into four parts.

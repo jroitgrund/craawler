@@ -8,10 +8,10 @@ const removeProtocol = url => {
   return parsedUrl.format();
 };
 
-export default fetchLinksAndAssetsAndAssets => rootUrl => {
+export default fetchLinksAndAssets => rootUrl => {
   const urlMap = {};
   const seenUrls = { [removeProtocol(rootUrl)]: true };
-  const recursiveFetch = url => fetchLinksAndAssetsAndAssets(url)
+  const recursiveFetch = url => fetchLinksAndAssets(url)
     .then(linksAndAssets => {
       if (linksAndAssets.links.length > 0 || linksAndAssets.assets.length > 0) {
         urlMap[url] = linksAndAssets;
@@ -25,7 +25,7 @@ export default fetchLinksAndAssetsAndAssets => rootUrl => {
             return link;
           })
           .map(recursiveFetch));
-    }); // No need to catch, we can just silently stop crawling for that URL.
+    });
 
   // The return value is just a bunch of nested empty arrays, what we want to return is the map.
   return recursiveFetch(rootUrl).then(() => urlMap);
